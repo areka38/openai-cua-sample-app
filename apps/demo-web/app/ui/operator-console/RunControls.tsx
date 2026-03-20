@@ -10,18 +10,22 @@ import type {
 import {
   browserHelpText,
   engineHelpText,
+  modelHelpText,
+  supportedRunModels,
   turnBudgetHelpText,
   verificationHelpText,
 } from "./helpers";
-import type { ActionButtonsProps } from "./types";
+import type { ActionButtonsProps, RunModel } from "./types";
 
 type RunControlsProps = ActionButtonsProps & {
   browserMode: BrowserMode;
   controlsLocked: boolean;
   maxResponseTurns: ResponseTurnBudget;
+  model: RunModel;
   mode: ExecutionMode;
   onBrowserModeChange: (value: BrowserMode) => void;
   onMaxResponseTurnsChange: (value: ResponseTurnBudget) => void;
+  onModelChange: (value: RunModel) => void;
   onModeChange: (value: ExecutionMode) => void;
   onPromptChange: (value: string) => void;
   onScenarioChange: (value: string) => void;
@@ -131,9 +135,11 @@ export function RunControls({
   browserMode,
   controlsLocked,
   maxResponseTurns,
+  model,
   mode,
   onBrowserModeChange,
   onMaxResponseTurnsChange,
+  onModelChange,
   onModeChange,
   onPromptChange,
   onScenarioChange,
@@ -211,6 +217,29 @@ export function RunControls({
               ]}
               value={mode}
             />
+          </div>
+
+          <div className="railField">
+            <div className="fieldLabel">
+              <label htmlFor="run-model">Model</label>
+              <InfoPopover
+                id="model-help-popover"
+                label="Model"
+                text={modelHelpText}
+              />
+            </div>
+            <select
+              disabled={controlsLocked}
+              id="run-model"
+              onChange={(event) => onModelChange(event.target.value as RunModel)}
+              value={model}
+            >
+              {supportedRunModels.map((option) => (
+                <option key={option} value={option}>
+                  {option === "gpt-5.4" ? "GPT-5.4" : "GPT-5.4 mini"}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="railField">

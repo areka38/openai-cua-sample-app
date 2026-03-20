@@ -43,6 +43,8 @@ export type ActivityItem = {
 
 export type PendingAction = "reset" | "start" | "stop" | null;
 
+export type RunModel = "gpt-5.4" | "gpt-5.4-mini";
+
 export type RunnerIssue = {
   code: string;
   error: string;

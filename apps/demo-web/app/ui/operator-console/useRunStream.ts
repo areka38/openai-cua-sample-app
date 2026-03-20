@@ -30,7 +30,13 @@ import {
   mapRunEventToActivity,
   parseRunnerIssue,
 } from "./helpers";
-import type { LogEntry, PendingAction, RunnerIssue, TranscriptEntry } from "./types";
+import type {
+  LogEntry,
+  PendingAction,
+  RunModel,
+  RunnerIssue,
+  TranscriptEntry,
+} from "./types";
 
 const emptyScreenshots: NonNullable<RunDetail["browser"]>["screenshots"] = [];
 
@@ -88,6 +94,7 @@ export function useRunStream({
   const [verificationEnabled, setVerificationEnabled] = useState(false);
   const [maxResponseTurns, setMaxResponseTurns] =
     useState<ResponseTurnBudget>(defaultMaxResponseTurns);
+  const [model, setModel] = useState<RunModel>(defaultRunModel);
   const [prompt, setPrompt] = useState(initialScenario?.defaultPrompt ?? "");
   const [streamLogs, setStreamLogs] = useState(true);
   const [activeRun, setActiveRun] = useState<RunDetail | null>(null);
@@ -411,7 +418,7 @@ export function useRunStream({
             browserMode,
             maxResponseTurns,
             mode,
-            model: defaultRunModel,
+            model,
             prompt,
             scenarioId: selectedScenario.id,
             verificationEnabled,
@@ -666,6 +673,7 @@ export function useRunStream({
     latestScreenshot,
     matchingWorkspaceState,
     maxResponseTurns,
+    model,
     mode,
     pendingAction,
     prompt,
@@ -679,6 +687,7 @@ export function useRunStream({
     selectedScenarioId,
     setBrowserMode,
     setMaxResponseTurns,
+    setModel,
     setMode,
     setPrompt,
     setStreamLogs,
