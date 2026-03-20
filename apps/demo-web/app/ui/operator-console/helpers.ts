@@ -31,7 +31,7 @@ export const defaultMaxResponseTurns = Number(
   process.env.NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS ?? "24",
 ) as ResponseTurnBudget;
 export const engineHelpText =
-  "Native drives the browser runtime directly for clicks, drags, typing, and screenshots. Code uses a persistent Playwright REPL for scripted browser control.";
+  "Native drives the browser runtime directly for clicks, drags, typing, and screenshots. Code uses a persistent Playwright REPL and is disabled by default in the public sample unless CUA_ENABLE_UNSAFE_CODE_TOOL=true is set on the runner.";
 export const modelHelpText =
   "Choose which model to use when the operator console starts a run.";
 export const browserHelpText =
