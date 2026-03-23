@@ -59,6 +59,7 @@ How verification works:
 
 ## Notes On Modes
 
-- `code` mode uses the browser REPL tool (`exec_js`) to drive the same lab.
-- `native` mode uses the computer tool directly.
+- `native` mode uses the computer tool directly and is the public default.
+- `code` mode uses the browser REPL tool (`exec_js`) to drive the same lab, but the public sample disables it by default because it executes model-generated JavaScript in the runner process.
+- Set `CUA_ENABLE_UNSAFE_CODE_TOOL=true` only for isolated local experimentation if you intentionally want to re-enable `code` mode.
 - Verification is the same either way because it reads the final lab state, not the agent transcript.

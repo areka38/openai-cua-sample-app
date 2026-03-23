@@ -10,8 +10,15 @@ import type { RunEvent } from "@cua-sample/replay-schema";
 import { RunnerManager } from "../src/index.js";
 
 const tempRoots: string[] = [];
+const originalUnsafeCodeTool = process.env.CUA_ENABLE_UNSAFE_CODE_TOOL;
 
 afterEach(async () => {
+  if (originalUnsafeCodeTool === undefined) {
+    delete process.env.CUA_ENABLE_UNSAFE_CODE_TOOL;
+  } else {
+    process.env.CUA_ENABLE_UNSAFE_CODE_TOOL = originalUnsafeCodeTool;
+  }
+
   for (const root of tempRoots.splice(0)) {
     await import("node:fs/promises").then(({ rm }) =>
       rm(root, { force: true, recursive: true }),
@@ -33,6 +40,39 @@ async function createManager(stepDelayMs = 10) {
 }
 
 describe("RunnerManager", () => {
+  it("fails code mode honestly when the unsafe exec_js path is disabled", async () => {
+    delete process.env.CUA_ENABLE_UNSAFE_CODE_TOOL;
+    const { manager } = await createManager(5);
+
+    const detail = await manager.startRun({
+      browserMode: "headless",
+      maxResponseTurns: 18,
+      mode: "code",
+      prompt: [
+        "Reorganize the board to match this requested final board state exactly.",
+        "",
+        "backlog: Refresh workspace docs",
+        "in_progress: Close nav bug triage -> Finalize analytics spec",
+        "done: Circulate launch brief -> Audit replay artifacts -> Polish stage tooltips",
+      ].join("\n"),
+      scenarioId: "kanban-reprioritize-sprint",
+    });
+
+    const failed = await manager.waitForRunStatus(detail.run.id, "failed");
+
+    expect(failed.run.status).toBe("failed");
+    expect(
+      failed.events.some(
+        (event: RunEvent) =>
+          event.type === "run_failed" &&
+          event.message.includes("disabled by default"),
+      ),
+    ).toBe(true);
+    expect(failed.run.summary?.notes).toContain(
+      "Error code: unsafe_code_mode_disabled",
+    );
+  });
+
   it("fails the kanban native executor honestly when live Responses is unavailable", async () => {
     const { manager } = await createManager(5);
 

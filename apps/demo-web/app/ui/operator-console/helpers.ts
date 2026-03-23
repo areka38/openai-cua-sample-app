@@ -11,17 +11,29 @@ import {
 import type {
   ActivityItem,
   LogEntry,
+  RunModel,
   RunnerIssue,
   TranscriptEntry,
 } from "./types";
 
-export const defaultRunModel =
-  process.env.NEXT_PUBLIC_CUA_DEFAULT_MODEL ?? "gpt-5.4";
+export const supportedRunModels: RunModel[] = ["gpt-5.4", "gpt-5.4-mini"];
+
+function coerceRunModel(value: string): RunModel {
+  return supportedRunModels.includes(value as RunModel)
+    ? (value as RunModel)
+    : "gpt-5.4";
+}
+
+export const defaultRunModel = coerceRunModel(
+  process.env.NEXT_PUBLIC_CUA_DEFAULT_MODEL ?? "gpt-5.4",
+);
 export const defaultMaxResponseTurns = Number(
   process.env.NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS ?? "24",
 ) as ResponseTurnBudget;
 export const engineHelpText =
-  "Native drives the browser runtime directly for clicks, drags, typing, and screenshots. Code uses a persistent Playwright REPL for scripted browser control.";
+  "Native drives the browser runtime directly for clicks, drags, typing, and screenshots. Code uses a persistent Playwright REPL and is disabled by default in the public sample unless CUA_ENABLE_UNSAFE_CODE_TOOL=true is set on the runner.";
+export const modelHelpText =
+  "Choose which model to use when the operator console starts a run.";
 export const browserHelpText =
   "Headless runs the browser off-screen. Visible opens the browser window so you can watch the session live as it runs.";
 export const turnBudgetHelpText =

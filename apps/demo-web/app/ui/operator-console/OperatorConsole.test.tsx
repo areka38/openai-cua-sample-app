@@ -119,4 +119,68 @@ describe("OperatorConsole", () => {
       ).length,
     ).toBeGreaterThan(0);
   });
+
+  it("starts a run with the selected model", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+
+    fetchMock
+      .mockResolvedValueOnce({
+        json: async () => ({
+          eventStreamUrl: "/api/runs/run-123/events",
+          replayUrl: "/api/runs/run-123/replay",
+          runId: "run-123",
+          status: "running",
+        }),
+        ok: true,
+        status: 200,
+      } as Response)
+      .mockResolvedValueOnce({
+        json: async () => ({
+          browser: undefined,
+          eventStreamUrl: "/api/runs/run-123/events",
+          events: [],
+          replayUrl: "/api/runs/run-123/replay",
+          run: {
+            browserMode: "headless",
+            id: "run-123",
+            labId: "kanban",
+            maxResponseTurns: 24,
+            mode: "code",
+            model: "gpt-5.4-mini",
+            prompt: scenario.defaultPrompt,
+            scenarioId: scenario.id,
+            startedAt: "2026-03-16T00:00:00.000Z",
+            status: "running",
+            verificationEnabled: false,
+          },
+          scenario,
+          workspacePath: "/tmp/run-123",
+        }),
+        ok: true,
+        status: 200,
+      } as Response);
+
+    render(
+      <OperatorConsole
+        initialRunnerIssue={null}
+        runnerBaseUrl="http://127.0.0.1:4001"
+        scenarios={[scenario]}
+      />,
+    );
+
+    await user.selectOptions(screen.getByLabelText("Model"), "gpt-5.4-mini");
+    await user.click(screen.getByRole("button", { name: "Start Run" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    const requestBody = JSON.parse(String(requestInit.body)) as {
+      model?: string;
+    };
+
+    expect(requestBody.model).toBe("gpt-5.4-mini");
+  });
 });

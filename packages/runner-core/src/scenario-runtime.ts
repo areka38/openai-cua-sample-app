@@ -71,6 +71,10 @@ const defaultHeadfulHoldMs = 3_500;
 const defaultPromptRequestedHoldMs = 5_000;
 const maxHeadfulHoldMs = 15_000;
 
+export function isUnsafeCodeToolEnabled(env: NodeJS.ProcessEnv = process.env) {
+  return env.CUA_ENABLE_UNSAFE_CODE_TOOL === "true";
+}
+
 export function assertActive(signal: AbortSignal) {
   if (signal.aborted) {
     throw new RunAbortedError();
@@ -234,6 +238,15 @@ export function createLiveResponsesUnavailableError(message: string) {
   });
 }
 
+export function createUnsafeCodeModeDisabledError(message: string) {
+  return new RunnerCoreError(message, {
+    code: "unsafe_code_mode_disabled",
+    hint:
+      "Use native mode instead. Only set CUA_ENABLE_UNSAFE_CODE_TOOL=true on an isolated machine if you intentionally want to experiment with exec_js locally.",
+    statusCode: 400,
+  });
+}
+
 export async function failLiveResponsesUnavailable(
   context: RunExecutionContext,
   message: string,
@@ -245,6 +258,19 @@ export async function failLiveResponsesUnavailable(
     type: "run_failed",
   });
   throw createLiveResponsesUnavailableError(message);
+}
+
+export async function failUnsafeCodeModeDisabled(
+  context: RunExecutionContext,
+  message: string,
+) {
+  await context.emitEvent({
+    detail: context.detail.run.prompt,
+    level: "error",
+    message,
+    type: "run_failed",
+  });
+  throw createUnsafeCodeModeDisabledError(message);
 }
 
 export function createUnsupportedScenarioError(scenarioId: string) {

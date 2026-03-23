@@ -15,7 +15,9 @@ import {
   runResponsesNativeComputerLoop,
 } from "../responses-loop.js";
 import {
+  failUnsafeCodeModeDisabled,
   failLiveResponsesUnavailable,
+  isUnsafeCodeToolEnabled,
   type RunExecutionContext,
   type RunExecutor,
   runWorkspaceLabBrowserFlow,
@@ -31,9 +33,16 @@ function formatBoardState(
 
 const liveOnlyMessage =
   "Kanban lab requires the live Responses API. Deterministic fallback is disabled to keep the operator prompt as the only source of truth.";
+const codeModeDisabledMessage =
+  "Kanban code mode is disabled by default in the public sample because exec_js executes model-generated JavaScript in the runner process.";
 
 class KanbanCodeExecutor implements RunExecutor {
   async execute(context: RunExecutionContext) {
+    if (!isUnsafeCodeToolEnabled()) {
+      await failUnsafeCodeModeDisabled(context, codeModeDisabledMessage);
+      return;
+    }
+
     const client = createDefaultResponsesClient();
 
     if (!client) {

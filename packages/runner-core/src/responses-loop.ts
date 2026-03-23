@@ -336,7 +336,7 @@ function buildCodeToolDefinitions() {
             description: [
               "JavaScript to execute in an async Playwright REPL.",
               "Persist state across calls with globalThis.",
-              "Available globals: console.log, display(base64Image), Buffer, browser, context, page.",
+              "Available globals: console.log, display(base64Image), browser, context, page.",
               "Prefer locator-based waits and domcontentloaded load-state waits over fixed delays.",
             ].join("\n"),
             type: "string",
@@ -690,7 +690,6 @@ export async function runResponsesCodeLoop(
 ): Promise<ResponsesLoopResult> {
   const jsOutputRef: { current: ToolOutput[] } = { current: [] };
   const sandbox = {
-    Buffer,
     browser: input.session.browser,
     console: {
       log: (...values: unknown[]) => {

@@ -23,9 +23,9 @@ describe("scenario registry", () => {
 
   it("uses the expected default mode for each lab", () => {
     const defaultModeByLab = new Map([
-      ["kanban", "code"],
-      ["paint", "code"],
-      ["booking", "code"],
+      ["kanban", "native"],
+      ["paint", "native"],
+      ["booking", "native"],
     ]);
 
     for (const scenario of listScenarios()) {

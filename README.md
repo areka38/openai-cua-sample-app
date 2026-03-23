@@ -91,9 +91,9 @@ OPENAI_API_KEY=your_key_here pnpm test:live
 ## Execution Modes
 
 - `native`: exposes the Responses API computer tool directly. The model requests clicks, drags, typing, waits, and screenshots against the live browser session.
-- `code`: exposes a persistent Playwright JavaScript REPL through `exec_js`. The model scripts the browser rather than emitting raw computer actions.
+- `code`: exposes a persistent Playwright JavaScript REPL through `exec_js`. Because it executes model-generated JavaScript in the runner process, the public sample disables it by default.
 
-Both modes use the same scenario manifests and replay pipeline. `native` is the closest sample of the computer tool itself. `code` is the clearest sample of a browser REPL harness.
+Both modes use the same scenario manifests and replay pipeline. `native` is the default and the closest sample of the computer tool itself. `code` remains available only for isolated local experimentation when you intentionally opt in with `CUA_ENABLE_UNSAFE_CODE_TOOL=true`.
 
 ## Official Scenarios
 
@@ -130,6 +130,7 @@ Runner:
 - `HOST` (default `127.0.0.1`)
 - `PORT` (default `4001`)
 - `CUA_DEFAULT_MODEL` (default `gpt-5.4`)
+- `CUA_ENABLE_UNSAFE_CODE_TOOL` (default disabled; set to `true` only for isolated local experimentation with `exec_js`)
 - `CUA_RESPONSES_MODE` (`auto`, `fallback`, or `live`)
 
 Web:
