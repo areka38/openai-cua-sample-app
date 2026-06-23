@@ -1,6 +1,7 @@
 import {
   runnerErrorResponseSchema,
   type BrowserScreenshotArtifact,
+  responseTurnBudgetSchema,
   type ResponseTurnBudget,
   type RunDetail,
   type RunEvent,
@@ -17,9 +18,21 @@ import type {
 
 export const defaultRunModel =
   process.env.NEXT_PUBLIC_CUA_DEFAULT_MODEL ?? "gpt-5.4";
-export const defaultMaxResponseTurns = Number(
-  process.env.NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS ?? "24",
-) as ResponseTurnBudget;
+
+function parseResponseTurnBudget(value: string | undefined) {
+  const parsed = Number(value);
+  const result = responseTurnBudgetSchema.safeParse(parsed);
+
+  return result.success ? result.data : null;
+}
+
+export function resolveDefaultMaxResponseTurns(
+  value: string | undefined = process.env.NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS,
+): ResponseTurnBudget {
+  return parseResponseTurnBudget(value) ?? 24;
+}
+
+export const defaultMaxResponseTurns = resolveDefaultMaxResponseTurns();
 export const engineHelpText =
   "Native drives the browser runtime directly for clicks, drags, typing, and screenshots. Code uses a persistent Playwright REPL for scripted browser control.";
 export const browserHelpText =

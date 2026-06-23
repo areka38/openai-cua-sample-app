@@ -55,6 +55,12 @@ pnpm playwright:install:with-deps
 
 If Playwright later reports missing system libraries, rerun the `with-deps` command above and follow any OS package prompts it prints.
 
+Check local setup before starting the apps:
+
+```bash
+pnpm setup:check
+```
+
 Start both apps together:
 
 ```bash
@@ -75,11 +81,35 @@ RUNNER_BASE_URL=http://127.0.0.1:4001 pnpm dev:web
 Common checks:
 
 ```bash
+pnpm setup:check
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm check
+```
+
+### Interpreting `pnpm setup:check`
+
+`pnpm setup:check` is a local preflight check for the browser runtime and live CUA prerequisites. It is expected to fail until `.env` exists and `OPENAI_API_KEY` has been replaced with a real key.
+
+Common failures:
+
+- `.env is missing`
+  Create it from the template with `cp .env.example .env`, then set `OPENAI_API_KEY`.
+- `OPENAI_API_KEY still looks like a placeholder`
+  Replace the example value before starting live runs.
+- `Playwright Chromium is not installed`
+  Run `pnpm playwright:install`. On Linux, use `pnpm playwright:install:with-deps` if system libraries are missing.
+- `PORT must be an integer between 1 and 65535`
+  Update `PORT` in `.env`.
+- `NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS must be an integer between 1 and 50`
+  Update the web turn budget in `.env` or `apps/demo-web/.env.local`.
+
+To validate the checked-in template without a real API key, run:
+
+```bash
+pnpm setup:check -- --env-file .env.example --allow-placeholder-key
 ```
 
 Live smoke tests stay opt-in and secret-gated:

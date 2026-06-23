@@ -6,6 +6,8 @@
     "dev": "concurrently -k -n runner,web -c blue,green \"pnpm dev:runner\" \"pnpm dev:web\"",
     "dev:web": "pnpm --filter @cua-sample/demo-web dev",
     "dev:runner": "pnpm --filter @cua-sample/runner dev",
+    "setup:check": "node scripts/setup-check.mjs",
+    "test:setup": "node --test scripts/setup-check.test.mjs",
     "playwright:install": "pnpm --filter @cua-sample/runner playwright:install",
     "playwright:install:with-deps": "pnpm --filter @cua-sample/runner playwright:install:with-deps",
     "lint": "eslint . --max-warnings=0",
@@ -16,7 +18,7 @@
     "start:render:runner": "HOST=0.0.0.0 PLAYWRIGHT_BROWSERS_PATH=0 pnpm --filter @cua-sample/runner start",
     "start:render:web": "pnpm --filter @cua-sample/demo-web start",
     "test:live": "pnpm --filter @cua-sample/runner-core test:live",
-    "test": "pnpm --filter @cua-sample/scenario-kit test && pnpm --filter @cua-sample/browser-runtime test && pnpm --filter @cua-sample/runner-core test && pnpm --filter @cua-sample/runner test && pnpm --filter @cua-sample/demo-web test",
+    "test": "pnpm test:setup && pnpm --filter @cua-sample/scenario-kit test && pnpm --filter @cua-sample/browser-runtime test && pnpm --filter @cua-sample/runner-core test && pnpm --filter @cua-sample/runner test && pnpm --filter @cua-sample/demo-web test",
     "typecheck": "pnpm --filter @cua-sample/replay-schema typecheck && pnpm --filter @cua-sample/scenario-kit typecheck && pnpm --filter @cua-sample/browser-runtime typecheck && pnpm --filter @cua-sample/runner-core typecheck && pnpm --filter @cua-sample/runner typecheck && pnpm --filter @cua-sample/demo-web typecheck"
   },
   "devDependencies": {
