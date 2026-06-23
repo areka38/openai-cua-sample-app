@@ -159,18 +159,19 @@
 - Attempted `git push origin main`; GitHub rejected it with 403 because `areka38` does not have write permission to `openai/openai-cua-sample-app`.
 - Selected the remaining API-key-free item from the open work: documenting the pinned `npx -y pnpm@10.26.0` fallback for machines where `corepack enable` cannot write pnpm shims.
 - Updated `README.md` with the fallback install, setup-check, and dev commands.
+- Committed the fallback docs as `f5d03ee` (`Document pinned pnpm fallback`).
+- Confirmed the remaining unblocked work is either blocked on GitHub write permission or a real `OPENAI_API_KEY`.
 
 ## Current Changes
 
-- Modified `README.md`.
-- Updated this `TODO.md`.
+- None. The working tree is clean after this TODO update is committed.
 
 ## Open Items
 
 - `pnpm` is not installed globally in this environment. `corepack enable` failed because it tried to write to `/usr/bin`. Current workaround is `npx -y pnpm@10.26.0 ...`.
 - `.env` has not been created yet. `npx -y pnpm@10.26.0 setup:check` currently reports this as an error. Live runs need at least `OPENAI_API_KEY`.
 - No live CUA smoke test was run because no `OPENAI_API_KEY` is configured.
-- Local `main` is ahead of `origin/main`, but push to `https://github.com/openai/openai-cua-sample-app.git` is blocked by missing write permission for `areka38`.
+- Local `main` has unpushed commits, but push to `https://github.com/openai/openai-cua-sample-app.git` is blocked by missing write permission for `areka38`.
 
 ## Suggested Next Work
 
