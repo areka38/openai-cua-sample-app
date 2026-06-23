@@ -31,6 +31,9 @@
 - Fixed runner dev startup when repo-root `.env` is missing.
 - Verified `pnpm dev` starts both runner and web locally without `.env` for non-live UI/scenario browsing.
 - Ignored local `.env.local` files and environment-specific local env variants while keeping `.env.example` tracked.
+- Committed setup validation and runner config work locally as `ec962ed`.
+- Confirmed `origin/main` had no newer commits before publishing attempt.
+- Documented `npx -y pnpm@10.26.0` as a fallback when `corepack enable` cannot install pnpm shims.
 
 ## Cycle Log
 
@@ -145,29 +148,29 @@
 - Verified full typecheck with `npx -y pnpm@10.26.0 typecheck`.
 - Verified production build with `npx -y pnpm@10.26.0 build`.
 
+### 2026-06-23 20:36 UTC
+
+- Read `TODO.md` and `git status`.
+- Ran `git fetch origin` and confirmed `main...origin/main` was `0 0` before publishing.
+- Re-verified the existing local changes with `npx -y pnpm@10.26.0 lint`.
+- Re-verified the full test suite with `npx -y pnpm@10.26.0 test`.
+- Re-verified typecheck with `npx -y pnpm@10.26.0 typecheck`.
+- Committed the setup validation and runner config changes as `ec962ed` (`Add setup validation and runner config checks`).
+- Attempted `git push origin main`; GitHub rejected it with 403 because `areka38` does not have write permission to `openai/openai-cua-sample-app`.
+- Selected the remaining API-key-free item from the open work: documenting the pinned `npx -y pnpm@10.26.0` fallback for machines where `corepack enable` cannot write pnpm shims.
+- Updated `README.md` with the fallback install, setup-check, and dev commands.
+
 ## Current Changes
 
-- Modified `apps/demo-web/app/ui/operator-console/helpers.ts`.
-- Modified `.gitignore`.
-- Added `apps/demo-web/app/ui/operator-console/helpers.test.ts`.
 - Modified `README.md`.
-- Modified `package.json`.
-- Modified `apps/runner/package.json`.
-- Modified `apps/runner/src/index.ts`.
-- Added `apps/runner/scripts/dev.mjs`.
-- Added `apps/runner/src/config.ts`.
-- Added `apps/runner/test/config.test.ts`.
-- Added `apps/runner/test/dev-script.test.mjs`.
-- Added `scripts/setup-check.mjs`.
-- Added `scripts/setup-check.test.mjs`.
-- Added and updated this `TODO.md`.
+- Updated this `TODO.md`.
 
 ## Open Items
 
 - `pnpm` is not installed globally in this environment. `corepack enable` failed because it tried to write to `/usr/bin`. Current workaround is `npx -y pnpm@10.26.0 ...`.
 - `.env` has not been created yet. `npx -y pnpm@10.26.0 setup:check` currently reports this as an error. Live runs need at least `OPENAI_API_KEY`.
 - No live CUA smoke test was run because no `OPENAI_API_KEY` is configured.
-- Changes are not committed yet.
+- Local `main` is ahead of `origin/main`, but push to `https://github.com/openai/openai-cua-sample-app.git` is blocked by missing write permission for `areka38`.
 
 ## Suggested Next Work
 

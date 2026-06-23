@@ -31,6 +31,15 @@ pnpm install
 cp .env.example .env
 ```
 
+If `corepack enable` cannot install pnpm shims on your machine, run the pinned
+pnpm version through `npx` instead:
+
+```bash
+npx -y pnpm@10.26.0 install
+npx -y pnpm@10.26.0 setup:check
+npx -y pnpm@10.26.0 dev
+```
+
 Edit `.env` and set at least this environment variable:
 
 ```bash
