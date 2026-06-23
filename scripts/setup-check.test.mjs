@@ -5,7 +5,6 @@ import {
   checkPort,
   checkResponseTurnBudget,
   compareVersions,
-  isPlaceholderApiKey,
   parseArgs,
   parseEnvFile,
 } from "./setup-check.mjs";
@@ -17,13 +16,11 @@ describe("setup-check helpers", () => {
         "--",
         "--env-file",
         ".env.example",
-        "--allow-placeholder-key",
         "--skip-playwright",
       ]),
       {
         help: false,
         options: {
-          allowPlaceholderKey: true,
           envFile: ".env.example",
           skipPlaywright: true,
         },
@@ -35,14 +32,12 @@ describe("setup-check helpers", () => {
     assert.deepEqual(
       parseEnvFile([
         "# Runner",
-        'OPENAI_API_KEY="sk-proj-123"',
         "PORT='4001'",
-        "CUA_RESPONSES_MODE=auto",
+        "COMPUTER_USE_DEFAULT_AGENT=codex-cli",
         "",
       ].join("\n")),
       {
-        CUA_RESPONSES_MODE: "auto",
-        OPENAI_API_KEY: "sk-proj-123",
+        COMPUTER_USE_DEFAULT_AGENT: "codex-cli",
         PORT: "4001",
       },
     );
@@ -59,12 +54,6 @@ describe("setup-check helpers", () => {
     assert.equal(checkResponseTurnBudget("50"), true);
     assert.equal(checkResponseTurnBudget("0"), false);
     assert.equal(checkResponseTurnBudget("51"), false);
-  });
-
-  it("detects placeholder API keys", () => {
-    assert.equal(isPlaceholderApiKey("sk-proj-123"), true);
-    assert.equal(isPlaceholderApiKey("your_key_here"), true);
-    assert.equal(isPlaceholderApiKey("sk-proj-realistic"), false);
   });
 
   it("compares dotted versions", () => {

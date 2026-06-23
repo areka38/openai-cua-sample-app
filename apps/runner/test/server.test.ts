@@ -2,9 +2,12 @@ import { mkdtemp } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
+  bridgeActionsResponseSchema,
+  bridgeSessionSchema,
+  bridgeToolsResponseSchema,
   runDetailSchema,
   runnerErrorResponseSchema,
   scenarioWorkspaceStateSchema,
@@ -12,7 +15,25 @@ import {
   startRunResponseSchema,
 } from "@cua-sample/replay-schema";
 
+import type { BridgeManager } from "../src/bridge.js";
 import { createServer } from "../src/server.js";
+
+const bridgeSessionFixture = {
+  browserMode: "headless",
+  createdAt: "2026-06-23T20:36:00.000Z",
+  id: "bridge-1",
+  lastActiveAt: "2026-06-23T20:36:01.000Z",
+  state: {
+    currentUrl: "about:blank",
+    mode: "headless",
+    screenshots: [],
+    targetLabel: "fake bridge target",
+    viewport: {
+      height: 900,
+      width: 1440,
+    },
+  },
+};
 
 describe("runner server", () => {
   it("reports health", async () => {
@@ -111,6 +132,100 @@ describe("runner server", () => {
 
       expect(response.statusCode).toBe(200);
       expect(scenariosResponseSchema.parse(response.json())).toHaveLength(3);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("serves the computer-use bridge tool registry", async () => {
+    const app = createServer();
+
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/bridge/tools",
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(bridgeToolsResponseSchema.parse(response.json())).toMatchObject({
+        service: "computer-use-bridge",
+        tools: expect.arrayContaining([
+          expect.objectContaining({ name: "create_session" }),
+          expect.objectContaining({ name: "exec_js" }),
+        ]),
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("routes computer-use bridge session and action requests", async () => {
+    const bridgeManager = {
+      closeAll: vi.fn(async () => undefined),
+      closeSession: vi.fn(async () => bridgeSessionFixture),
+      createSession: vi.fn(async () => bridgeSessionFixture),
+      executeActions: vi.fn(async () => ({
+        results: [
+          {
+            index: 0,
+            ok: true,
+            result: "Bridge Test",
+            type: "exec_js",
+          },
+        ],
+        session: bridgeSessionFixture,
+      })),
+      readScreenshot: vi.fn(),
+      readSession: vi.fn(async () => bridgeSessionFixture),
+    } as unknown as BridgeManager;
+    const app = createServer({ bridgeManager });
+
+    try {
+      const createResponse = await app.inject({
+        method: "POST",
+        payload: {
+          browserMode: "headless",
+          startUrl: "about:blank",
+        },
+        url: "/api/bridge/sessions",
+      });
+
+      expect(createResponse.statusCode).toBe(201);
+      expect(bridgeSessionSchema.parse(createResponse.json()).id).toBe("bridge-1");
+
+      const actionsResponse = await app.inject({
+        method: "POST",
+        payload: {
+          actions: [
+            {
+              script: "document.title",
+              type: "exec_js",
+            },
+          ],
+        },
+        url: "/api/bridge/sessions/bridge-1/actions",
+      });
+
+      expect(actionsResponse.statusCode).toBe(200);
+      expect(
+        bridgeActionsResponseSchema.parse(actionsResponse.json()).results[0],
+      ).toMatchObject({
+        ok: true,
+        result: "Bridge Test",
+        type: "exec_js",
+      });
+      expect(bridgeManager.createSession).toHaveBeenCalledWith({
+        browserMode: "headless",
+        startUrl: "about:blank",
+      });
+      expect(bridgeManager.executeActions).toHaveBeenCalledWith("bridge-1", {
+        actions: [
+          {
+            script: "document.title",
+            type: "exec_js",
+          },
+        ],
+      });
     } finally {
       await app.close();
     }

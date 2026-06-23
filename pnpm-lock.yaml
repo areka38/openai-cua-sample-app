@@ -77,6 +77,9 @@ importers:
 
   apps/runner:
     dependencies:
+      '@cua-sample/browser-runtime':
+        specifier: workspace:*
+        version: link:../../packages/browser-runtime
       '@cua-sample/replay-schema':
         specifier: workspace:*
         version: link:../../packages/replay-schema
@@ -119,9 +122,6 @@ importers:
       '@cua-sample/scenario-kit':
         specifier: workspace:*
         version: link:../scenario-kit
-      openai:
-        specifier: ^6.25.0
-        version: 6.25.0(ws@8.19.0)(zod@3.25.76)
 
   packages/scenario-kit:
     dependencies:
@@ -1484,18 +1484,6 @@ packages:
   on-exit-leak-free@2.1.2:
     resolution: {integrity: sha512-0eJJY6hXLGf1udHwfNftBqH+g73EU4B504nZeKpz1sYRKafAghwxEJunB2O7rDZkL4PGfsMVnTXZ2EjibbqcsA==}
     engines: {node: '>=14.0.0'}
-
-  openai@6.25.0:
-    resolution: {integrity: sha512-mEh6VZ2ds2AGGokWARo18aPISI1OhlgdEIC1ewhkZr8pSIT31dec0ecr9Nhxx0JlybyOgoAT1sWeKtwPZzJyww==}
-    hasBin: true
-    peerDependencies:
-      ws: ^8.18.0
-      zod: ^3.25 || ^4.0
-    peerDependenciesMeta:
-      ws:
-        optional: true
-      zod:
-        optional: true
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -3291,11 +3279,6 @@ snapshots:
   object-assign@4.1.1: {}
 
   on-exit-leak-free@2.1.2: {}
-
-  openai@6.25.0(ws@8.19.0)(zod@3.25.76):
-    optionalDependencies:
-      ws: 8.19.0
-      zod: 3.25.76
 
   optionator@0.9.4:
     dependencies:

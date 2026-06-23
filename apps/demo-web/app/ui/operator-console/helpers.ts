@@ -17,7 +17,7 @@ import type {
 } from "./types";
 
 export const defaultRunModel =
-  process.env.NEXT_PUBLIC_CUA_DEFAULT_MODEL ?? "gpt-5.4";
+  process.env.NEXT_PUBLIC_CUA_DEFAULT_MODEL ?? "external-cli";
 
 function parseResponseTurnBudget(value: string | undefined) {
   const parsed = Number(value);
@@ -34,22 +34,20 @@ export function resolveDefaultMaxResponseTurns(
 
 export const defaultMaxResponseTurns = resolveDefaultMaxResponseTurns();
 export const engineHelpText =
-  "Native drives the browser runtime directly for clicks, drags, typing, and screenshots. Code uses a persistent Playwright REPL for scripted browser control.";
+  "Native maps computer-use actions to the browser runtime. Code exposes a Playwright JavaScript path for code-capable CLI agents.";
 export const browserHelpText =
   "Headless runs the browser off-screen. Visible opens the browser window so you can watch the session live as it runs.";
 export const turnBudgetHelpText =
-  "Caps how many model turns the runner can use before stopping the run. Higher budgets allow longer plans but take more time.";
+  "Caps how many agent turns the runner can use before stopping the run. Higher budgets allow longer plans but take more time.";
 export const verificationHelpText =
-  "Runs the scenario's built-in checks after the model stops. Leave this off to treat the model's completed action loop as the success condition.";
+  "Runs the scenario's built-in checks after the agent stops. Leave this off to treat the completed action loop as the success condition.";
 export const runnerUnavailableHint =
-  "Start `pnpm dev` or `OPENAI_API_KEY=... pnpm dev:runner`, then refresh the page.";
+  "Start `pnpm dev` or `pnpm dev:runner`, then refresh the page.";
 
 function titleForIssueCode(code: string) {
   switch (code) {
     case "runner_unavailable":
       return "Runner unavailable";
-    case "missing_api_key":
-      return "Runner missing API key";
     case "live_mode_unavailable":
       return "Live mode unavailable";
     case "unsupported_safety_acknowledgement":

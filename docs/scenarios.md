@@ -10,13 +10,13 @@ The OSS release branch keeps three public scenarios. All of them are browser lab
 
 What it exercises:
 
-- reading a structured operator prompt
+- reading structured task text
 - rearranging drag-and-drop state in the browser
 - verifying exact column membership and card order
 
 How verification works:
 
-- the verifier parses the target board state from the operator prompt
+- the verifier parses the target board state from the task text
 - the live board state is read from the lab
 - every card must appear exactly once in the requested column and order
 
@@ -53,12 +53,12 @@ What it exercises:
 
 How verification works:
 
-- the operator prompt is parsed into a booking request
+- the task text is parsed into a booking request
 - the verifier checks the applied filters in the UI
 - the local confirmation record must match the requested hotel, guest, dates, and special request
 
 ## Notes On Modes
 
-- `code` mode uses the browser REPL tool (`exec_js`) to drive the same lab.
-- `native` mode uses the computer tool directly.
+- `code` mode uses the JavaScript action path (`exec_js`) to drive the same lab.
+- `native` mode uses direct computer-use actions.
 - Verification is the same either way because it reads the final lab state, not the agent transcript.

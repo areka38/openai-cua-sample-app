@@ -5,6 +5,11 @@ import { basename, resolve } from "node:path";
 import Fastify, { type FastifyReply } from "fastify";
 
 import {
+  bridgeActionsRequestSchema,
+  bridgeActionsResponseSchema,
+  bridgeCreateSessionRequestSchema,
+  bridgeSessionSchema,
+  bridgeToolsResponseSchema,
   runDetailSchema,
   runnerErrorResponseSchema,
   scenarioWorkspaceStateSchema,
@@ -20,7 +25,10 @@ import {
 } from "@cua-sample/runner-core";
 import { listScenarios } from "@cua-sample/scenario-kit";
 
+import { BridgeManager, bridgeTools } from "./bridge.js";
+
 type CreateServerOptions = {
+  bridgeManager?: BridgeManager;
   dataRoot?: string;
   manager?: RunnerManager;
   stepDelayMs?: number;
@@ -41,14 +49,20 @@ export function createServer(options: CreateServerOptions = {}) {
       : { stepDelayMs: options.stepDelayMs }),
   };
   const manager = options.manager ?? new RunnerManager(managerOptions);
+  const bridgeManager =
+    options.bridgeManager ?? new BridgeManager({ dataRoot: resolvedDataRoot });
   const app = Fastify({ logger: false });
 
   app.addHook("onSend", async (_request, reply, payload) => {
     reply.header("Access-Control-Allow-Origin", "*");
     reply.header("Access-Control-Allow-Headers", "content-type");
-    reply.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    reply.header("Access-Control-Allow-Methods", "DELETE,GET,POST,OPTIONS");
 
     return payload;
+  });
+
+  app.addHook("onClose", async () => {
+    await bridgeManager.closeAll();
   });
 
   app.options("*", async (_request, reply) => {
@@ -92,6 +106,68 @@ export function createServer(options: CreateServerOptions = {}) {
 
   app.get("/api/scenarios", async () =>
     scenariosResponseSchema.parse(listScenarios()),
+  );
+
+  app.get("/api/bridge/tools", async () =>
+    bridgeToolsResponseSchema.parse(bridgeTools),
+  );
+
+  app.post("/api/bridge/sessions", async (request, reply) => {
+    const input = bridgeCreateSessionRequestSchema.parse(request.body ?? {});
+    const session = await bridgeManager.createSession(input);
+
+    reply.code(201);
+
+    return bridgeSessionSchema.parse(session);
+  });
+
+  app.get("/api/bridge/sessions/:id", async (request) =>
+    bridgeSessionSchema.parse(
+      await bridgeManager.readSession((request.params as { id: string }).id),
+    ),
+  );
+
+  app.post("/api/bridge/sessions/:id/actions", async (request) => {
+    const input = bridgeActionsRequestSchema.parse(request.body);
+
+    return bridgeActionsResponseSchema.parse(
+      await bridgeManager.executeActions(
+        (request.params as { id: string }).id,
+        input,
+      ),
+    );
+  });
+
+  app.delete("/api/bridge/sessions/:id", async (request) =>
+    bridgeSessionSchema.parse(
+      await bridgeManager.closeSession((request.params as { id: string }).id),
+    ),
+  );
+
+  app.get(
+    "/api/bridge/sessions/:id/screenshots/:name",
+    async (request, reply) => {
+      const params = request.params as { id: string; name: string };
+
+      try {
+        const payload = await bridgeManager.readScreenshot(params.id, params.name);
+
+        reply.header("Content-Type", "image/png");
+        return payload;
+      } catch (error) {
+        if (error instanceof RunnerCoreError) {
+          throw error;
+        }
+
+        reply.code(404);
+        return runnerErrorResponseSchema.parse({
+          code: "bridge_screenshot_not_found",
+          error: "Bridge screenshot artifact not found",
+          hint:
+            "Capture a screenshot through /api/bridge/sessions/:id/actions before requesting it.",
+        });
+      }
+    },
   );
 
   app.post("/api/scenarios/:id/reset", async (request) =>

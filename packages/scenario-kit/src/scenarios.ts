@@ -20,7 +20,7 @@ const scenarioCatalog = scenarioManifestSchema.array().parse([
     category: "productivity",
     title: "Launch Planner",
     description:
-      "Move cards across columns and reorder the sprint board to match the final board state written in the operator prompt.",
+      "Move cards across columns and reorder the sprint board to match the final board state written in the task text.",
     defaultPrompt: kanbanDefaultPrompt,
     workspaceTemplatePath: templatePath("kanban-lab-template"),
     startTarget: {
@@ -46,7 +46,7 @@ const scenarioCatalog = scenarioManifestSchema.array().parse([
     category: "creativity",
     title: "Sketch Studio",
     description:
-      "Use a paint-like interface to create a simple prompt-driven sketch with precise cursor control.",
+      "Use a paint-like interface to create a simple task-driven sketch with precise cursor control.",
     defaultPrompt: paintDefaultPrompt,
     workspaceTemplatePath: templatePath("paint-lab-template"),
     startTarget: {
@@ -72,7 +72,7 @@ const scenarioCatalog = scenarioManifestSchema.array().parse([
     category: "commerce",
     title: "Northstar Stays",
     description:
-      "Search inventory, apply the requested filters, complete the reservation form, and land on a matching local confirmation using only the operator prompt.",
+      "Search inventory, apply the requested filters, complete the reservation form, and land on a matching local confirmation using only the task text.",
     defaultPrompt: bookingDefaultPrompt,
     workspaceTemplatePath: templatePath("booking-lab-template"),
     startTarget: {
@@ -87,7 +87,7 @@ const scenarioCatalog = scenarioManifestSchema.array().parse([
         id: "booking-record",
         kind: "booking_record",
         description:
-          "The local confirmation record and applied filters match the hotel, guest, dates, and requirements in the operator prompt.",
+          "The local confirmation record and applied filters match the hotel, guest, dates, and requirements in the task text.",
       },
     ],
     tags: ["hero", "commerce", "forms"],

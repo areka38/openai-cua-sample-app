@@ -130,33 +130,6 @@ function formatBookingRecord(input: BookingRequest | Exclude<BookingConfirmation
   ].join(" | ");
 }
 
-export function buildBookingRunnerPrompt(prompt: string) {
-  return prompt.trim();
-}
-
-export function buildBookingCodeInstructions(currentUrl: string) {
-  return [
-    "You are operating a persistent Playwright browser session for a GPT-5.4 CUA demo harness.",
-    "You must use the exec_js tool before you answer.",
-    `The booking app is already open at ${currentUrl}.`,
-    "Use only the operator prompt as the source of truth.",
-    "Apply the requested search filters, select the requested hotel, complete the reservation form, and confirm the booking.",
-    "Only finish when the reservation panel shows the booking as confirmed.",
-    "Reply briefly once the booking is confirmed.",
-  ].join("\n");
-}
-
-export function buildBookingNativeInstructions(currentUrl: string) {
-  return [
-    "You are controlling a browser-based booking app through the built-in computer tool.",
-    `The booking app is already open at ${currentUrl}.`,
-    "Use only the operator prompt as the source of truth.",
-    "Apply the requested search filters, select the requested hotel, complete the reservation form, and confirm the booking.",
-    "Only stop requesting computer actions once the reservation panel shows the booking as confirmed.",
-    "Reply briefly once the booking is confirmed.",
-  ].join("\n");
-}
-
 async function readBookingValue<T>(
   session: BrowserSession,
   accessorName:
@@ -233,7 +206,7 @@ export async function assertBookingOutcome(session: BrowserSession, prompt: stri
   ) {
     throw new Error(
       [
-        "Booking verification failed. Applied filters did not match the operator prompt.",
+        "Booking verification failed. Applied filters did not match the task text.",
         `Observed neighborhood=${filters.neighborhood || "<any>"} breakfast=${String(filters.requireBreakfast)} workspace=${String(filters.requireWorkspace)}.`,
       ].join(" "),
     );

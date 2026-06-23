@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@cua-sample/browser-runtime": "workspace:*",
     "@cua-sample/replay-schema": "workspace:*",
     "@cua-sample/runner-core": "workspace:*",
     "@cua-sample/scenario-kit": "workspace:*",

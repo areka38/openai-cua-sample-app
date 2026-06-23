@@ -80,7 +80,7 @@ describe("OperatorConsole", () => {
     ).toBeGreaterThan(0);
     expect(
       screen.getAllByText(
-        /Start `pnpm dev` or `OPENAI_API_KEY=... pnpm dev:runner`/,
+        /Start `pnpm dev` or `pnpm dev:runner`/,
       ).length,
     ).toBeGreaterThan(0);
     expect(screen.getByText("Runner Offline")).toBeTruthy();
@@ -92,9 +92,9 @@ describe("OperatorConsole", () => {
 
     fetchMock.mockResolvedValue({
       json: async () => ({
-        code: "missing_api_key",
-        error: "OPENAI_API_KEY is not configured in the runner.",
-        hint: "Set OPENAI_API_KEY and restart the runner.",
+        code: "bridge_session_not_found",
+        error: "Bridge session bridge-1 was not found.",
+        hint: "Create a bridge session before sending computer-use actions.",
       }),
       ok: false,
       status: 400,
@@ -111,11 +111,11 @@ describe("OperatorConsole", () => {
     await user.click(screen.getByRole("button", { name: "Start Run" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Runner missing API key")).toBeTruthy();
+      expect(screen.getByText("Bridge Session Not Found")).toBeTruthy();
     });
     expect(
       screen.getAllByText(
-        /OPENAI_API_KEY is not configured in the runner\. Set OPENAI_API_KEY and restart the runner\./,
+        /Bridge session bridge-1 was not found\. Create a bridge session before sending computer-use actions\./,
       ).length,
     ).toBeGreaterThan(0);
   });

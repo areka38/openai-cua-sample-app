@@ -18,11 +18,11 @@ export function ConsoleTopbar({
     <header className="consoleTopbar">
       <div className="brandBlock">
         <div className="brandMark">
-          <span>GPT</span>
-          <strong>5.4</strong>
+          <span>CU</span>
+          <strong>CLI</strong>
         </div>
         <div className="brandCopy">
-          <h1>GPT-5.4 CUA Sample App</h1>
+          <h1>Computer-Use Bridge</h1>
           <p>{topbarSubtitle}</p>
         </div>
       </div>

@@ -5,7 +5,7 @@ This repo is intentionally small. New public scenarios should follow the existin
 ## Add A Scenario
 
 1. Add the lab template under `labs/<name>-lab-template`.
-2. Add a manifest and default prompt in `packages/scenario-kit/src`.
+2. Add a manifest and default task text in `packages/scenario-kit/src`.
 3. Export the manifest through `packages/scenario-kit/src/scenarios.ts`.
 4. Add scenario instructions and verification helpers in `packages/runner-core/src`.
 5. Register the executor in `packages/runner-core/src/executor-registry.ts`.
@@ -17,7 +17,7 @@ Verification belongs in `packages/runner-core`.
 
 Guidelines:
 
-- verify final lab state, not incidental model behavior
+- verify final lab state, not incidental agent behavior
 - prefer stable lab accessors over brittle DOM text scraping
 - include enough detail in failure messages that replay review is actionable
 
@@ -43,4 +43,5 @@ pnpm test
 pnpm build
 ```
 
-Use `pnpm test:live` only when you have an `OPENAI_API_KEY` and want the live Responses API smoke tests.
+For bridge changes, also start `pnpm dev:runner` and exercise
+`GET /api/bridge/tools` plus one `POST /api/bridge/sessions` request.

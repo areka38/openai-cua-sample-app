@@ -10,16 +10,15 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const runnerRequire = createRequire(new URL("../apps/runner/package.json", import.meta.url));
 const minimumNodeVersion = "22.20.0";
 const defaultOptions = {
-  allowPlaceholderKey: false,
   envFile: ".env",
   skipPlaywright: false,
 };
 
 function usage() {
   return [
-    "Usage: pnpm setup:check [--env-file <path>] [--skip-playwright] [--allow-placeholder-key]",
+    "Usage: pnpm setup:check [--env-file <path>] [--skip-playwright]",
     "",
-    "Checks Node, pnpm, required env keys, env value ranges, and the Playwright Chromium install.",
+    "Checks Node, pnpm, optional env value ranges, and the Playwright Chromium install.",
   ].join("\n");
 }
 
@@ -55,7 +54,6 @@ export function parseArgs(argv) {
     }
 
     if (arg === "--allow-placeholder-key") {
-      options.allowPlaceholderKey = true;
       continue;
     }
 
@@ -118,16 +116,6 @@ export function parseEnvFile(contents) {
 
 async function readEnvFile(path) {
   return parseEnvFile(await readFile(path, "utf8"));
-}
-
-export function isPlaceholderApiKey(value) {
-  const trimmed = value.trim();
-
-  return (
-    trimmed === "sk-proj-123" ||
-    trimmed === "your_key_here" ||
-    trimmed.includes("your_key_here")
-  );
 }
 
 function isIntegerString(value) {
@@ -217,34 +205,19 @@ function checkRuntime(results, packageJson) {
   addResult(results, "ok", `pnpm ${actualPnpm} matches packageManager.`);
 }
 
-function checkEnvValues(results, env, exampleEnv, options) {
-  const missingKeys = Object.keys(exampleEnv).filter((key) => !env[key]?.trim());
+function hasEnvValue(env, key) {
+  return Boolean(env[key]?.trim());
+}
 
-  if (missingKeys.length > 0) {
-    addResult(
-      results,
-      "error",
-      `Missing required env values from ${options.envFile}: ${missingKeys.join(", ")}.`,
-    );
-  } else {
-    addResult(results, "ok", `${options.envFile} includes all .env.example keys.`);
-  }
-
-  const responsesMode = env.CUA_RESPONSES_MODE?.trim().toLowerCase();
-
-  if (!["auto", "fallback", "live"].includes(responsesMode)) {
-    addResult(
-      results,
-      "error",
-      "CUA_RESPONSES_MODE must be one of: auto, fallback, live.",
-    );
-  }
-
-  if (!checkPort(env.PORT ?? "")) {
+function checkEnvValues(results, env, label) {
+  if (hasEnvValue(env, "PORT") && !checkPort(env.PORT)) {
     addResult(results, "error", "PORT must be an integer between 1 and 65535.");
   }
 
-  if (!checkResponseTurnBudget(env.NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS ?? "")) {
+  if (
+    hasEnvValue(env, "NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS") &&
+    !checkResponseTurnBudget(env.NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS)
+  ) {
     addResult(
       results,
       "error",
@@ -252,23 +225,15 @@ function checkEnvValues(results, env, exampleEnv, options) {
     );
   }
 
-  try {
-    new URL(env.RUNNER_BASE_URL ?? "");
-  } catch {
-    addResult(results, "error", "RUNNER_BASE_URL must be a valid URL.");
+  if (hasEnvValue(env, "RUNNER_BASE_URL")) {
+    try {
+      new URL(env.RUNNER_BASE_URL);
+    } catch {
+      addResult(results, "error", "RUNNER_BASE_URL must be a valid URL.");
+    }
   }
 
-  const apiKey = env.OPENAI_API_KEY?.trim() ?? "";
-
-  if (!apiKey) {
-    addResult(results, "error", "OPENAI_API_KEY is required for live CUA runs.");
-  } else if (!options.allowPlaceholderKey && isPlaceholderApiKey(apiKey)) {
-    addResult(
-      results,
-      "error",
-      "OPENAI_API_KEY still looks like a placeholder. Replace it before starting live runs.",
-    );
-  }
+  addResult(results, "ok", `${label} optional environment values are valid.`);
 }
 
 function printResults(results) {
@@ -309,28 +274,26 @@ async function main() {
 
   checkRuntime(results, packageJson);
 
-  let exampleEnv;
-
   try {
-    exampleEnv = await readEnvFile(resolve(repoRoot, ".env.example"));
+    const exampleEnv = await readEnvFile(resolve(repoRoot, ".env.example"));
+
     addResult(results, "ok", ".env.example is present.");
+    checkEnvValues(results, exampleEnv, ".env.example");
   } catch {
     addResult(results, "error", ".env.example is missing or unreadable.");
   }
 
-  if (exampleEnv) {
-    try {
-      const env = await readEnvFile(resolve(repoRoot, options.envFile));
+  try {
+    const env = await readEnvFile(resolve(repoRoot, options.envFile));
 
-      addResult(results, "ok", `Loaded env file ${options.envFile}.`);
-      checkEnvValues(results, env, exampleEnv, options);
-    } catch {
-      addResult(
-        results,
-        "error",
-        `${options.envFile} is missing. Run \`cp .env.example .env\` and set OPENAI_API_KEY.`,
-      );
-    }
+    addResult(results, "ok", `Loaded env file ${options.envFile}.`);
+    checkEnvValues(results, env, options.envFile);
+  } catch {
+    addResult(
+      results,
+      "warn",
+      `${options.envFile} is missing. This is fine for local bridge work; create it only for local overrides.`,
+    );
   }
 
   if (options.skipPlaywright) {

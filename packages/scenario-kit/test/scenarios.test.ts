@@ -7,7 +7,7 @@ import { scenarioManifestSchema } from "@cua-sample/replay-schema";
 import { listScenarios } from "../src/index.js";
 
 describe("scenario registry", () => {
-  it("loads only the prompt-driven scenarios that are still enabled", () => {
+  it("loads only the task-driven scenarios that are still enabled", () => {
     const scenarios = listScenarios();
 
     expect(scenarios).toHaveLength(3);

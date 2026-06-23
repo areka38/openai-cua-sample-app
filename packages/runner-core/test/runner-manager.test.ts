@@ -33,7 +33,7 @@ async function createManager(stepDelayMs = 10) {
 }
 
 describe("RunnerManager", () => {
-  it("fails the kanban native executor honestly when live Responses is unavailable", async () => {
+  it("fails the kanban native executor honestly when the agent bridge is unavailable", async () => {
     const { manager } = await createManager(5);
 
     const detail = await manager.startRun({
@@ -57,12 +57,12 @@ describe("RunnerManager", () => {
       failed.events.some(
         (event: RunEvent) =>
           event.type === "run_failed" &&
-          event.message.includes("live Responses API"),
+          event.message.includes("external CLI agent bridge"),
       ),
     ).toBe(true);
   });
 
-  it("fails the paint native executor honestly when live Responses is unavailable", async () => {
+  it("fails the paint native executor honestly when the agent bridge is unavailable", async () => {
     const { manager } = await createManager(5);
 
     const detail = await manager.startRun({
@@ -80,12 +80,12 @@ describe("RunnerManager", () => {
       failed.events.some(
         (event: RunEvent) =>
           event.type === "run_failed" &&
-          event.message.includes("live Responses API"),
+          event.message.includes("external CLI agent bridge"),
       ),
     ).toBe(true);
   });
 
-  it("fails the booking native executor honestly when live Responses is unavailable", async () => {
+  it("fails the booking native executor honestly when the agent bridge is unavailable", async () => {
     const { manager } = await createManager(5);
 
     const detail = await manager.startRun({
@@ -114,7 +114,7 @@ describe("RunnerManager", () => {
       failed.events.some(
         (event: RunEvent) =>
           event.type === "run_failed" &&
-          event.message.includes("live Responses API"),
+          event.message.includes("external CLI agent bridge"),
       ),
     ).toBe(true);
   });

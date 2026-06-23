@@ -165,6 +165,112 @@ export const browserStateSchema = z.object({
 });
 export type BrowserState = z.infer<typeof browserStateSchema>;
 
+export const bridgeCreateSessionRequestSchema = z.object({
+  browserMode: browserModeSchema.optional(),
+  startUrl: z.string().min(1).optional(),
+  targetLabel: z.string().min(1).optional(),
+});
+export type BridgeCreateSessionRequest = z.infer<
+  typeof bridgeCreateSessionRequestSchema
+>;
+
+const pointerCoordinateSchema = z.number().finite().nonnegative();
+const pointerButtonSchema = z.enum(["left", "middle", "right"]);
+
+export const bridgeActionSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("navigate"),
+    url: z.string().min(1),
+  }),
+  z.object({
+    button: pointerButtonSchema.optional(),
+    type: z.literal("click"),
+    x: pointerCoordinateSchema,
+    y: pointerCoordinateSchema,
+  }),
+  z.object({
+    button: pointerButtonSchema.optional(),
+    type: z.literal("double_click"),
+    x: pointerCoordinateSchema,
+    y: pointerCoordinateSchema,
+  }),
+  z.object({
+    text: z.string(),
+    type: z.literal("type_text"),
+  }),
+  z.object({
+    key: z.string().min(1),
+    type: z.literal("press_key"),
+  }),
+  z.object({
+    deltaX: z.number().finite().optional(),
+    deltaY: z.number().finite().optional(),
+    type: z.literal("scroll"),
+  }),
+  z.object({
+    endX: pointerCoordinateSchema,
+    endY: pointerCoordinateSchema,
+    startX: pointerCoordinateSchema,
+    startY: pointerCoordinateSchema,
+    type: z.literal("drag"),
+  }),
+  z.object({
+    ms: z.number().int().nonnegative().max(60_000),
+    type: z.literal("wait"),
+  }),
+  z.object({
+    label: z.string().min(1).optional(),
+    type: z.literal("screenshot"),
+  }),
+  z.object({
+    script: z.string().min(1),
+    type: z.literal("exec_js"),
+  }),
+]);
+export type BridgeAction = z.infer<typeof bridgeActionSchema>;
+
+export const bridgeActionsRequestSchema = z.object({
+  actions: z.array(bridgeActionSchema).min(1).max(25),
+});
+export type BridgeActionsRequest = z.infer<typeof bridgeActionsRequestSchema>;
+
+export const bridgeSessionSchema = z.object({
+  browserMode: browserModeSchema,
+  createdAt: z.string().datetime(),
+  id: z.string().min(1),
+  lastActiveAt: z.string().datetime(),
+  state: browserStateSchema,
+});
+export type BridgeSession = z.infer<typeof bridgeSessionSchema>;
+
+export const bridgeActionResultSchema = z.object({
+  error: z.string().optional(),
+  index: z.number().int().nonnegative(),
+  ok: z.boolean(),
+  result: z.unknown().optional(),
+  screenshot: browserScreenshotArtifactSchema.optional(),
+  type: z.string().min(1),
+});
+export type BridgeActionResult = z.infer<typeof bridgeActionResultSchema>;
+
+export const bridgeActionsResponseSchema = z.object({
+  results: z.array(bridgeActionResultSchema),
+  session: bridgeSessionSchema,
+});
+export type BridgeActionsResponse = z.infer<typeof bridgeActionsResponseSchema>;
+
+export const bridgeToolSchema = z.object({
+  description: z.string().min(1),
+  name: z.string().min(1),
+});
+export type BridgeTool = z.infer<typeof bridgeToolSchema>;
+
+export const bridgeToolsResponseSchema = z.object({
+  service: z.literal("computer-use-bridge"),
+  tools: z.array(bridgeToolSchema),
+});
+export type BridgeToolsResponse = z.infer<typeof bridgeToolsResponseSchema>;
+
 export const startRunRequestSchema = z.object({
   scenarioId: z.string().min(1),
   mode: executionModeSchema,

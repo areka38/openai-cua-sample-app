@@ -1,17 +1,19 @@
-# GPT-5.4 CUA Sample App
+# Computer-Use Bridge
 
-TypeScript sample app for browser-focused computer-use workflows with GPT-5.4. The repo includes:
+TypeScript browser runtime for connecting external CLI agents to computer-use.
+The target clients are tools such as Claude Code CLI, Codex CLI, Gemini CLI,
+Cursor, and Antigravity. The repo includes:
 
-- `apps/demo-web`: a Next.js operator console for starting runs and reviewing screenshots, events, and replay artifacts
-- `apps/runner`: a Fastify runner that manages mutable workspaces, browser sessions, SSE, and replay bundles
+- `apps/demo-web`: a Next.js operator console for reviewing screenshots, events, and replay artifacts
+- `apps/runner`: a Fastify runner that exposes scenario APIs and a model-free `/api/bridge/*` computer-use bridge
 - `packages/*`: shared scenario, runtime, and contract packages that make it easy to add new labs later
 
 The legacy Python sample does not ship in this release branch. Keep that history on a separate `v1` or `legacy` branch.
 
 ## What This Repo Demonstrates
 
-- how to integrate the Responses API from one canonical place: `packages/runner-core/src/responses-loop.ts`
-- how to switch between `code` mode and `native` computer mode against the same browser lab
+- how to expose a local Playwright browser as computer-use actions over HTTP
+- how external CLI agents can drive the same browser session with navigate, click, type, key, scroll, drag, screenshot, and JavaScript actions
 - how to define scenario manifests, launch isolated run workspaces, and verify outcomes
 - how to build an operator-facing console that is understandable even when the runner is offline or a run fails
 
@@ -25,10 +27,9 @@ The legacy Python sample does not ship in this release branch. Keep that history
 
 ```bash
 git clone <repo-url>
-cd openai-cua-sample-app
+cd <repo-directory>
 corepack enable
 pnpm install
-cp .env.example .env
 ```
 
 If `corepack enable` cannot install pnpm shims on your machine, run the pinned
@@ -40,13 +41,10 @@ npx -y pnpm@10.26.0 setup:check
 npx -y pnpm@10.26.0 dev
 ```
 
-Edit `.env` and set at least this environment variable:
-
-```bash
-OPENAI_API_KEY=your_key_here
-```
-
-The runner reads the repo-root `.env` automatically when you start it through the provided scripts. The web app uses its built-in defaults; if you need to override `NEXT_PUBLIC_*` settings, add them in `apps/demo-web/.env.local`.
+No API key is required. The runner and bridge use local Playwright. If you need
+to override local ports or default labels, copy `.env.example` to `.env` and edit
+those optional values. The web app uses its built-in defaults; if you need to
+override `NEXT_PUBLIC_*` settings, add them in `apps/demo-web/.env.local`.
 
 If `pnpm install` prints an `Ignored build scripts` warning for optional packages such as `sharp` or `esbuild`, you can ignore it for local development in this repo. A clean clone still installs, builds, and starts successfully without approving those scripts.
 
@@ -78,6 +76,42 @@ pnpm dev
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000), choose a scenario, keep `Headless` selected, and start a run.
 
+## CLI Bridge API
+
+External agents do not need hosted model APIs. They only need to talk to the
+runner bridge:
+
+```bash
+curl http://127.0.0.1:4001/api/bridge/tools
+```
+
+Create a browser session:
+
+```bash
+curl -s http://127.0.0.1:4001/api/bridge/sessions \
+  -H 'content-type: application/json' \
+  -d '{"browserMode":"headless","startUrl":"about:blank","targetLabel":"codex-cli"}'
+```
+
+Send computer-use actions to the returned session id:
+
+```bash
+curl -s http://127.0.0.1:4001/api/bridge/sessions/<session-id>/actions \
+  -H 'content-type: application/json' \
+  -d '{
+    "actions": [
+      {"type":"navigate","url":"https://example.com"},
+      {"type":"screenshot","label":"loaded"}
+    ]
+  }'
+```
+
+Supported actions are `navigate`, `click`, `double_click`, `type_text`,
+`press_key`, `scroll`, `drag`, `wait`, `screenshot`, and `exec_js`.
+
+See [docs/agent-bridge.md](docs/agent-bridge.md) for the bridge contract and
+agent integration notes.
+
 ## Local Development
 
 Run the services separately if you want independent logs:
@@ -100,45 +134,38 @@ pnpm check
 
 ### Interpreting `pnpm setup:check`
 
-`pnpm setup:check` is a local preflight check for the browser runtime and live CUA prerequisites. It is expected to fail until `.env` exists and `OPENAI_API_KEY` has been replaced with a real key.
+`pnpm setup:check` is a local preflight check for the browser runtime. It does
+not require `.env` or any hosted-model API key.
 
 Common failures:
 
-- `.env is missing`
-  Create it from the template with `cp .env.example .env`, then set `OPENAI_API_KEY`.
-- `OPENAI_API_KEY still looks like a placeholder`
-  Replace the example value before starting live runs.
 - `Playwright Chromium is not installed`
   Run `pnpm playwright:install`. On Linux, use `pnpm playwright:install:with-deps` if system libraries are missing.
 - `PORT must be an integer between 1 and 65535`
-  Update `PORT` in `.env`.
+  Update `PORT` in `.env` if you created local overrides.
 - `NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS must be an integer between 1 and 50`
   Update the web turn budget in `.env` or `apps/demo-web/.env.local`.
 
-To validate the checked-in template without a real API key, run:
+To validate the checked-in template, run:
 
 ```bash
-pnpm setup:check -- --env-file .env.example --allow-placeholder-key
+pnpm setup:check -- --env-file .env.example
 ```
 
-Live smoke tests stay opt-in and secret-gated:
+## Scenario Runner Modes
 
-```bash
-OPENAI_API_KEY=your_key_here pnpm test:live
-```
+- `native`: maps computer-use actions such as click, drag, type, wait, and screenshot to the browser runtime.
+- `code`: exposes a JavaScript path through `exec_js` for code-capable CLI agents.
 
-## Execution Modes
-
-- `native`: exposes the Responses API computer tool directly. The model requests clicks, drags, typing, waits, and screenshots against the live browser session.
-- `code`: exposes a persistent Playwright JavaScript REPL through `exec_js`. The model scripts the browser rather than emitting raw computer actions.
-
-Both modes use the same scenario manifests and replay pipeline. `native` is the closest sample of the computer tool itself. `code` is the clearest sample of a browser REPL harness.
+The `/api/bridge/*` endpoints are the model-free integration point. Scenario
+manifests and replay artifacts remain useful for local labs, verification, and
+operator review.
 
 ## Official Scenarios
 
-- `kanban-reprioritize-sprint` (`kanban`): teaches stateful drag-and-drop verification against a target board state derived from the operator prompt
-- `paint-draw-poster` (`paint`): teaches cursor control, drawing, and verifying saved canvas state against the live canvas
-- `booking-complete-reservation` (`booking`): teaches multi-step browsing and form completion with verification against a local confirmation record
+- `kanban-reprioritize-sprint` (`kanban`): stateful drag-and-drop verification against a target board state
+- `paint-draw-poster` (`paint`): cursor control, drawing, and saved canvas verification
+- `booking-complete-reservation` (`booking`): multi-step browsing and form completion with local confirmation verification
 
 More detail lives in [docs/scenarios.md](docs/scenarios.md).
 
@@ -151,7 +178,7 @@ More detail lives in [docs/scenarios.md](docs/scenarios.md).
 - `packages/replay-schema`
   Shared request, response, replay, and error contracts
 - `packages/scenario-kit`
-  Public scenario manifests and prompt defaults
+  Public scenario manifests and default task text
 - `packages/browser-runtime`
   Playwright session abstraction
 - `packages/runner-core`
@@ -165,16 +192,14 @@ More detail lives in [docs/scenarios.md](docs/scenarios.md).
 
 Runner:
 
-- `OPENAI_API_KEY`
 - `HOST` (default `127.0.0.1`)
 - `PORT` (default `4001`)
-- `CUA_DEFAULT_MODEL` (default `gpt-5.4`)
-- `CUA_RESPONSES_MODE` (`auto`, `fallback`, or `live`)
+- `COMPUTER_USE_DEFAULT_AGENT` (default `external-cli`)
 
 Web:
 
 - `RUNNER_BASE_URL` (default `http://127.0.0.1:4001`)
-- `NEXT_PUBLIC_CUA_DEFAULT_MODEL` (default `gpt-5.4`)
+- `NEXT_PUBLIC_CUA_DEFAULT_MODEL` (default `external-cli`)
 - `NEXT_PUBLIC_CUA_DEFAULT_MAX_RESPONSE_TURNS` (default `24`)
 
 See [.env.example](.env.example) for a minimal local template.
@@ -183,7 +208,7 @@ See [.env.example](.env.example) for a minimal local template.
 
 - Computer use remains high risk. Do not point this sample at authenticated, financial, medical, or otherwise high-stakes environments.
 - This repo is intentionally browser-focused. Workspace patching and file-editing scenarios are out of scope for the OSS release branch.
-- Pending computer-use safety acknowledgements are not implemented in this sample yet. Runs fail with the stable code `unsupported_safety_acknowledgement` when the API asks for one.
+- The bridge executes local browser actions requested by whichever CLI agent you connect. Treat those agents as untrusted automation unless you control the task and target.
 - The public scenarios are local labs designed for deterministic verification. They are not intended as proofs of general web autonomy.
 
 ## Release Validation Checklist
@@ -191,6 +216,8 @@ See [.env.example](.env.example) for a minimal local template.
 - clean clone on a fresh machine
 - setup succeeds from this README alone
 - `pnpm dev`
-- one successful headless run
-- one successful headful run
+- one successful `/api/bridge/sessions` creation
+- one successful bridge `screenshot` action
+- one successful headless bridge session
+- one successful headful bridge session
 - one intentional failure that shows the new runner guidance cleanly

@@ -227,9 +227,9 @@ export async function runWorkspaceLabBrowserFlow(
 
 export function createLiveResponsesUnavailableError(message: string) {
   return new RunnerCoreError(message, {
-    code: "live_mode_unavailable",
+    code: "agent_bridge_required",
     hint:
-      "Set OPENAI_API_KEY in the runner environment, then rerun the scenario in code or native mode.",
+      "Start a bridge session through /api/bridge/sessions and connect an external CLI adapter before running autonomous scenario loops.",
     statusCode: 400,
   });
 }

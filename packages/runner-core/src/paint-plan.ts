@@ -16,33 +16,6 @@ function countPaintedCells(grid: PaintGrid) {
   return grid.flat().filter((cell) => cell !== "blank").length;
 }
 
-export function buildPaintRunnerPrompt(prompt: string) {
-  return prompt.trim();
-}
-
-export function buildPaintCodeInstructions(currentUrl: string) {
-  return [
-    "You are operating a persistent Playwright browser session for a GPT-5.4 CUA demo harness.",
-    "You must use the exec_js tool before you answer.",
-    `The paint app is already open at ${currentUrl}.`,
-    "Use the operator prompt as the source of truth.",
-    "Create a best-effort pixel-art interpretation of the requested image using the available palette, then save the draft.",
-    "You can use the Erase swatch to correct mistakes if needed.",
-    "Reply briefly once the draft has been saved.",
-  ].join("\n");
-}
-
-export function buildPaintNativeInstructions(currentUrl: string) {
-  return [
-    "You are controlling a browser-based paint app through the built-in computer tool.",
-    `The paint app is already open at ${currentUrl}.`,
-    "Use the operator prompt as the source of truth.",
-    "Create a best-effort pixel-art interpretation of the requested image using the available palette, then save the draft.",
-    "You can use the Erase swatch to correct mistakes if needed.",
-    "Reply briefly once the draft has been saved.",
-  ].join("\n");
-}
-
 async function readPaintValue<T>(
   session: BrowserSession,
   accessorName: "__paintReadCanvasGrid" | "__paintReadSaveRecord",

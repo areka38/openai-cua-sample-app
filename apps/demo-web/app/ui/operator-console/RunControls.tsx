@@ -174,7 +174,7 @@ export function RunControls({
             disabled={controlsLocked}
             id="run-prompt"
             onChange={(event) => onPromptChange(event.target.value)}
-            placeholder="Describe the operator task for GPT-5.4."
+            placeholder="Describe the browser task for the connected CLI agent."
             rows={5}
             value={prompt}
           />
