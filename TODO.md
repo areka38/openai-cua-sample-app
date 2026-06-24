@@ -30,10 +30,15 @@ Hosted model APIs are not required for this project.
 - Added root `pnpm mcp:bridge` script.
 - Added MCP adapter unit coverage in `scripts/bridge-mcp.test.mjs`.
 - Documented MCP usage in `README.md` and `docs/agent-bridge.md`.
+- Created `areka38/openai-cua-sample-app` as a writable fork.
+- Reconfigured git remotes:
+  - `origin` points to the writable fork.
+  - `upstream` points to `openai/openai-cua-sample-app`.
+- Pushed local `main` to the writable fork.
 
 ## Current Change Set
 
-- MCP bridge adapter changes are validated.
+- Computer-use bridge and MCP adapter changes are validated and pushed to the fork.
 - Validation completed successfully:
   - `npx -y pnpm@10.26.0 lint`
   - `npx -y pnpm@10.26.0 test`
@@ -45,7 +50,8 @@ Hosted model APIs are not required for this project.
 
 ## Open Items
 
-- Push is still blocked for the upstream remote unless a writable remote or fork is configured.
+- Direct push to `openai/openai-cua-sample-app` remains unavailable because the authenticated GitHub user has read-only upstream permission.
+- Open a PR from `areka38:main` to `openai:main` if upstream contribution is desired.
 
 ## Suggested Next Work
 
