@@ -26,26 +26,29 @@ Hosted model APIs are not required for this project.
 - Removed API-key requirements from setup docs and `setup:check`.
 - Reframed README/docs/UI copy around `Computer-Use Bridge`.
 - Added `docs/agent-bridge.md`.
+- Added a dependency-free MCP stdio adapter in `scripts/bridge-mcp.mjs`.
+- Added root `pnpm mcp:bridge` script.
+- Added MCP adapter unit coverage in `scripts/bridge-mcp.test.mjs`.
+- Documented MCP usage in `README.md` and `docs/agent-bridge.md`.
 
 ## Current Change Set
 
-- Bridge pivot changes are validated and ready to commit.
+- MCP bridge adapter changes are validated.
 - Validation completed successfully:
   - `npx -y pnpm@10.26.0 lint`
   - `npx -y pnpm@10.26.0 test`
   - `npx -y pnpm@10.26.0 typecheck`
   - `npx -y pnpm@10.26.0 setup:check`
   - local bridge smoke test against `pnpm dev:runner`
+  - local MCP stdio smoke test against `pnpm dev:runner`
   - `npx -y pnpm@10.26.0 build`
 
 ## Open Items
 
-- Push is still blocked for the upstream remote unless a writable remote or fork
-  is configured.
+- Push is still blocked for the upstream remote unless a writable remote or fork is configured.
 
 ## Suggested Next Work
 
-- Add an MCP adapter over the same bridge contracts for tools that prefer MCP.
 - Add small per-agent connection examples for Claude Code CLI, Codex CLI,
   Gemini CLI, Cursor, and Antigravity once the preferred invocation format is
   confirmed.

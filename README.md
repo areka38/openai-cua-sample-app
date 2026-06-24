@@ -112,6 +112,16 @@ Supported actions are `navigate`, `click`, `double_click`, `type_text`,
 See [docs/agent-bridge.md](docs/agent-bridge.md) for the bridge contract and
 agent integration notes.
 
+For tools that prefer MCP stdio, run the adapter after the runner is started:
+
+```bash
+pnpm mcp:bridge
+```
+
+The adapter exposes the same browser controls as MCP tools and forwards calls to
+`RUNNER_BASE_URL` or `COMPUTER_USE_BRIDGE_URL` when either environment variable
+is set.
+
 ## Local Development
 
 Run the services separately if you want independent logs:
